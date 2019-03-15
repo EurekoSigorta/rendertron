@@ -57,6 +57,8 @@ export class Rendertron {
 
     this.app.use(
         route.get('/render/:url(.*)', this.handleRenderRequest.bind(this)));
+    this.app.use(
+        route.get('/renderMobile/:url(.*)', this.handleMobileRenderRequest.bind(this)));
     this.app.use(route.get(
         '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
     this.app.use(route.post(
@@ -83,6 +85,12 @@ export class Rendertron {
   }
 
   async handleRenderRequest(ctx: Koa.Context, url: string) {
+    var regex = new RegExp('^(https|http):\/\/([^\.]*).eurekosigorta.com.tr')
+    if (regex.exec(url) == null) {
+      ctx.status = 403;
+      return;
+    }
+
     if (!this.renderer) {
       throw (new Error('No renderer initalized yet.'));
     }
@@ -92,9 +100,30 @@ export class Rendertron {
       return;
     }
 
-    const mobileVersion = 'mobile' in ctx.query ? true : false;
+    const serialized = await this.renderer.serialize(url, false);
+    // Mark the response as coming from Rendertron.
+    ctx.set('x-renderer', 'rendertron');
+    ctx.status = serialized.status;
+    ctx.body = serialized.content;
+  }
 
-    const serialized = await this.renderer.serialize(url, mobileVersion);
+  async handleMobileRenderRequest(ctx: Koa.Context, url: string) {
+    var regex = new RegExp('^(https|http):\/\/([^\.]*).eurekosigorta.com.tr')
+    if (regex.exec(url) == null) {
+      ctx.status = 403;
+      return;
+    }
+    
+    if (!this.renderer) {
+      throw (new Error('No renderer initalized yet.'));
+    }
+
+    if (this.restricted(url)) {
+      ctx.status = 403;
+      return;
+    }
+
+    const serialized = await this.renderer.serialize(url, true);
     // Mark the response as coming from Rendertron.
     ctx.set('x-renderer', 'rendertron');
     ctx.status = serialized.status;
