@@ -65,6 +65,8 @@ export class Rendertron {
         '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
     this.app.use(route.get(
         '/robots.txt', this.handleRobotTxt.bind(this)));
+    this.app.use(route.post(
+        '/robots.txt', this.handleRobotTxt.bind(this)));
     this.app.use(route.get(
         '/google165f924783608c8b.html', (ctx: Koa.Context) => {
           ctx.status = 200
