@@ -65,6 +65,12 @@ export class Rendertron {
         '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
     this.app.use(route.get(
         '/robots.txt', this.handleRobotTxt.bind(this)));
+    this.app.use(route.get(
+        '/google165f924783608c8b.html', (ctx: Koa.Context) => {
+          ctx.status = 200
+          ctx.body = "google-site-verification: google165f924783608c8b.html"
+          return
+        }));
 
     return this.app.listen(this.port, () => {
       console.log(`Listening on port ${this.port}`);
@@ -171,6 +177,12 @@ export class Rendertron {
     ctx.body = "User-agent: *\nDisallow: /"
     return;
   }
+  async handleGoogle (ctx: Koa.Context) {
+    ctx.status = 200
+    ctx.body = "User-agent: *\nDisallow: /"
+    return;
+  }
+  
 }
 
 async function logUncaughtError(error: Error) {
